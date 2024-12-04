@@ -48,6 +48,9 @@ from prismatic.vla.datasets.rlds.utils.data_utils import save_dataset_statistics
 from prismatic.extern.hf.configuration_prismatic import OpenVLAConfig
 from prismatic.extern.hf.modeling_prismatic import OpenVLAForActionPrediction
 from prismatic.extern.hf.processing_prismatic import PrismaticImageProcessor, PrismaticProcessor
+from experiments.robot.robot_utils import (
+    set_seed_everywhere,
+)
 
 # Sane Defaults
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -78,7 +81,8 @@ class FinetuneConfig:
     vla_path: str = "openvla/openvla-7b"                            # Path to OpenVLA model (on HuggingFace Hub)
 
     # Directory Paths
-    data_root_dir: Path = Path("datasets/open-x-embodiment")        # Path to Open-X dataset directory
+    data_root_dir: Path = Path("datasets")
+    # data_root_dir: Path = Path("datasets/open-x-embodiment")       # Path to Open-X dataset directory
     dataset_name: str = "droid_wipe"                                # Name of fine-tuning dataset (e.g., `droid_wipe`)
     run_root_dir: Path = Path("runs")                               # Path to directory to store logs & checkpoints
     adapter_tmp_dir: Path = Path("adapter-tmp")                     # Temporary directory for LoRA weights before fusing
@@ -219,7 +223,9 @@ def finetune(cfg: FinetuneConfig) -> None:
         resize_resolution=tuple(vla.module.config.image_sizes),
         shuffle_buffer_size=cfg.shuffle_buffer_size,
         image_aug=cfg.image_aug,
+        train=True
     )
+
 
     # [Important] Save Dataset Statistics =>> used to de-normalize actions for inference!
     if distributed_state.is_main_process:
@@ -236,6 +242,7 @@ def finetune(cfg: FinetuneConfig) -> None:
         collate_fn=collator,
         num_workers=0,  # Important =>> Set to 0 if using RLDS; TFDS rolls its own parallelism!
     )
+
 
     # Initialize Logging =>> W&B
     if distributed_state.is_main_process:
@@ -367,7 +374,12 @@ def finetune(cfg: FinetuneConfig) -> None:
             if gradient_step_idx == cfg.max_steps:
                 print(f"Max step {cfg.max_steps} reached! Stopping training...")
                 break
-
+            
+        
+            
+        
+        
 
 if __name__ == "__main__":
+    # set_seed_everywhere(0)
     finetune()

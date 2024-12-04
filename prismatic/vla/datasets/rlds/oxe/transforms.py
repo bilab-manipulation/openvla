@@ -840,6 +840,29 @@ def libero_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
     trajectory["observation"]["gripper_state"] = trajectory["observation"]["state"][:, -2:]  # 2D gripper state
     return trajectory
 
+def example_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
+    # Extract all columns as a list
+    columns = tf.unstack(trajectory["action"], axis=1)
+    # Swap columns 4 and 5
+    columns[4], columns[5] = columns[5], columns[4]
+
+    # Stack the columns back into a tensor
+    new_action = tf.stack(columns, axis=1)
+    # Update the trajectory dictionary
+    trajectory["action"] = new_action
+    return trajectory
+
+def arti_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
+    # Extract all columns as a list
+    columns = tf.unstack(trajectory["action"], axis=1)
+    # Swap columns 4 and 5
+    columns[4], columns[5] = columns[5], columns[4]
+
+    # Stack the columns back into a tensor
+    new_action = tf.stack(columns, axis=1)
+    # Update the trajectory dictionary
+    trajectory["action"] = new_action
+    return trajectory
 
 # === Registry ===
 OXE_STANDARDIZATION_TRANSFORMS = {
@@ -919,4 +942,10 @@ OXE_STANDARDIZATION_TRANSFORMS = {
     "libero_object_no_noops": libero_dataset_transform,
     "libero_goal_no_noops": libero_dataset_transform,
     "libero_10_no_noops": libero_dataset_transform,
+
+    #example
+    "example_dataset":example_transform,
+    "arti_dataset_two_parts":example_transform,
+    "arti1203_all":arti_transform,
+    
 }

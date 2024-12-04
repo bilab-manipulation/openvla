@@ -43,8 +43,12 @@ class RLDSBatchTransform:
 
         # Construct Chat-based Prompt =>> Input is default query + language instruction, output are the action tokens
         prompt_builder = self.prompt_builder_fn("openvla")
+        '''
+        NOTICE: 여기서 human value에 prompt를 넣어줬음.
+        '''
         conversation = [
-            {"from": "human", "value": f"What action should the robot take to {lang}?"},
+            # {"from": "human", "value": f"What action should the robot take to {lang}?"},
+            {"from": "human", "value": f"{lang}"},
             {"from": "gpt", "value": self.action_tokenizer(action)},
         ]
         for turn in conversation:
@@ -92,7 +96,7 @@ class RLDSDataset(IterableDataset):
         per_dataset_kwargs, weights = get_oxe_dataset_kwargs_and_weights(
             self.data_root_dir,
             mixture_spec,
-            load_camera_views=("primary",),
+            load_camera_views=("primary","wrist","secondary"),
             load_depth=False,
             load_proprio=False,
             load_language=True,
